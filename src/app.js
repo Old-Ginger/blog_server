@@ -1,0 +1,78 @@
+const Koa = require('koa')
+const cors = require('@koa/cors')
+const fs = require('fs')
+const path = require('path')
+const bodyParser = require('koa-bodyparser')
+const app = new Koa()
+
+
+const routesDir = path.join(__dirname, 'routes')
+
+function loadRoutes(dir) {
+    const entries = fs.readdirSync(dir)
+    for (const name of entries) {
+        const full = path.join(dir, name)
+        const stat = fs.statSync(full)
+        if (stat.isDirectory()) {
+            loadRoutes(full)
+            continue
+        }
+        if (!name.endsWith('.js')) {
+            continue
+        }
+        const mod = require(full)
+        mountExport(mod)
+    }
+}
+
+function mountExport(mod) {
+    if (!mod) {
+        return
+    }
+    const exported = mod.__esModule && mod.default ? mod.default : mod
+
+    if (Array.isArray(exported)) {
+        exported.forEach(mountExport)
+        return
+    }
+    if (exported && typeof exported.routes === 'function') {
+        app.use(exported.routes())
+        app.use(exported.allowedMethods())
+        return
+    }
+
+}
+
+app.use(cors({
+    origin: (ctx) => {
+        let origin = ['*', 'http://localhost:8000', 'http://172.0.0.1:8000']
+        let reqOrigin = ctx.request.header.origin
+        console.log('请求origin为::::::', reqOrigin);
+        console.log(ctx)
+        if (origin.indexOf(reqOrigin) > -1) {
+            console.log('允许访问');
+            return reqOrigin
+        } else {
+            return false
+        }
+    },
+    // origin: '*',
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'credential'],
+    credentials: true,
+    maxAge: 86400
+}))
+app.use(bodyParser())
+
+app.use(async (ctx, next) => {
+    console.log(`[${new Date().toISOString()}] ${ctx.method} ${ctx.url}`);
+    console.log('请求头:', ctx.headers);
+
+    await next();
+
+    console.log('响应状态:', ctx.status);
+    console.log('响应头:', ctx.response.headers);
+});
+loadRoutes(routesDir)
+
+module.exports = app

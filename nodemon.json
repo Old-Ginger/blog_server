@@ -1,0 +1,12 @@
+{
+    "watch": [
+        "src",
+        "db.js"
+    ],
+    "delay": 2500,
+    "restartable": "restart",
+    "ignore": [
+        "dist/",
+        "logs/"
+    ]
+}
