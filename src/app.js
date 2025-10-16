@@ -4,9 +4,11 @@ const fs = require('fs')
 const path = require('path')
 const bodyParser = require('koa-bodyparser')
 const app = new Koa()
-
+require('dotenv').config()
+const gateway = require('./middleware/gateway')
 
 const routesDir = path.join(__dirname, 'routes')
+
 
 function loadRoutes(dir) {
     const entries = fs.readdirSync(dir)
@@ -63,15 +65,9 @@ app.use(cors({
     maxAge: 86400
 }))
 app.use(bodyParser())
-
+app.use(gateway)
 app.use(async (ctx, next) => {
-    console.log(`[${new Date().toISOString()}] ${ctx.method} ${ctx.url}`);
-    console.log('请求头:', ctx.headers);
-
     await next();
-
-    console.log('响应状态:', ctx.status);
-    console.log('响应头:', ctx.response.headers);
 });
 loadRoutes(routesDir)
 

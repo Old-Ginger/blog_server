@@ -1,7 +1,12 @@
 const UserModel = require('../models/userModel')
 const { BLOG_CODE } = require('../../util/constant')
+
+/**
+ * 创建用户
+ * @param {*} ctx 
+ * @returns 
+ */
 exports.createUser = async (ctx) => {
-    console.log('ctx ========= ', ctx.request);
     const { name, password, phone } = ctx.request.body
     if (!name || !password || !phone) {
         ctx.status = 400
@@ -21,13 +26,17 @@ exports.createUser = async (ctx) => {
     }
 }
 
+/**
+ * 登录请求
+ * @param {*} ctx 
+ * @returns 
+ */
 exports.checkUserLogin = async (ctx) => {
     const {
         phone,
         password,
         name
     } = ctx.request.body
-    console.log('ctx =========  ', ctx);
 
     if (!phone || !password || !name) {
         ctx.status = 400
@@ -38,8 +47,10 @@ exports.checkUserLogin = async (ctx) => {
         return
     } else {
         const result = await UserModel.checkUser({ phone, password, name })
-        console.log('result = ', result);
-
+        if (result.respCd === BLOG_CODE.SUCCESS) {
+            const { token } = result.data
+            ctx.set('token', token)
+        }
         ctx.status = 201
         ctx.body = result
     }
