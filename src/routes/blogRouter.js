@@ -2,10 +2,18 @@ const Router = require('koa-router')
 const router = new Router()
 const {
     createBlog,
-    getBlogList
+    getBlogList,
+    favorBlog,
+    unfavorBlog,
+    commentBlog,
+    blogCommentList
 } = require('../controllers/blogController')
 
 router.post('/getBlogList', getBlogList)
 router.post('/postBlog', createBlog)
+router.post('/favorBlog', favorBlog)
+router.post('/unfavorBlog', unfavorBlog)
+router.post('/commentBlog', commentBlog)
+router.post('/blogCommentList', blogCommentList)
 
 module.exports = router

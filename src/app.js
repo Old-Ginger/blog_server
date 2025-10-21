@@ -49,10 +49,8 @@ app.use(cors({
     origin: (ctx) => {
         let origin = ['*', 'http://localhost:8000', 'http://172.0.0.1:8000']
         let reqOrigin = ctx.request.header.origin
-        console.log('请求origin为::::::', reqOrigin);
         console.log(ctx)
         if (origin.indexOf(reqOrigin) > -1) {
-            console.log('允许访问');
             return reqOrigin
         } else {
             return false

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const JWT_SECRET = process.env.JWT_SECRET
+const { BLOG_CODE } = require('../../util/constant')
 const PUBLIC_PATHS = new Set([
     '/',
     '/user',
@@ -8,10 +9,7 @@ const PUBLIC_PATHS = new Set([
 ])
 
 module.exports = async (ctx, next) => {
-    console.log('------ gateway middleware ------');
     const token = ctx.headers?.token
-    console.log('token = ', token);
-
     // if (!token) {
     //     ctx.status = 401
     //     ctx.body = {
@@ -27,9 +25,11 @@ module.exports = async (ctx, next) => {
             ctx.state.user = decoded
             return await next()
         } catch (error) {
+            console.log('error ==== ', error);
+
             ctx.status = 401
             ctx.body = {
-                respCd: '401',
+                respCd: BLOG_CODE.NEED_LOGIN,
                 respMsg: '无效的token，请重新登录'
             }
         }
