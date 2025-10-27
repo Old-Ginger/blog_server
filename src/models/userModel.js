@@ -83,6 +83,132 @@ class UserModel {
             })
         })
     }
+
+    static async followUser(userData) {
+
+        return new Promise((resolve, reject) => {
+            const {
+                follower_id,
+                id
+            } = userData
+            const sql = `INSERT INTO user_relation (follower_id, followee_id, created_at) VALUES (?, ?,datetime('now'))`
+            db.run(sql, [id, follower_id], (err) => {
+                if (err) {
+                    reject({
+                        respCd: BLOG_CODE.FAIL,
+                        respMsg: err.message
+                    });
+                } else {
+                    resolve({
+                        respCd: BLOG_CODE.SUCCESS,
+                        respMsg: '关注成功',
+                    });
+                }
+            })
+        })
+    }
+
+    static async unfollowUser(userData) {
+        return new Promise((resolve, reject) => {
+            const {
+                follower_id,
+                id
+            } = userData
+            const sql = `DELETE FROM user_relation WHERE follower_id = ? AND followee_id = ?`
+            db.run(sql, [id, follower_id], (err) => {
+                if (err) {
+                    reject({
+                        respCd: BLOG_CODE.FAIL,
+                        respMsg: err.message
+                    });
+                } else {
+                    resolve({
+                        respCd: BLOG_CODE.SUCCESS,
+                        respMsg: '取关成功',
+                    });
+                }
+            })
+        })
+    }
+
+    //统计粉丝数量
+    static async countFollowers(userData) {
+        return new Promise((resolve, reject) => {
+            const {
+                id
+            } = userData
+            const sql = `SELECT COUNT(*) AS followerCount FROM user_relation WHERE followee_id = ?`
+            db.get(sql, [id], (err, row) => {
+                console.log('countFollowers row = ', row);
+
+                if (err) {
+                    reject({
+                        respCd: BLOG_CODE.FAIL,
+                        respMsg: err.message
+                    });
+                } else {
+                    resolve({
+                        respCd: BLOG_CODE.SUCCESS,
+                        respMsg: '查询成功',
+                        data: {
+                            followerCount: row.followerCount
+                        }
+                    });
+                }
+            })
+        })
+    }
+
+    //统计关注人数
+    static async countFollowees(userData) {
+        return new Promise((resolve, reject) => {
+            const {
+                id
+            } = userData
+            const sql = `SELECT COUNT(*) AS followeeCount FROM user_relation WHERE follower_id = ?`
+            db.get(sql, [id], (err, row) => {
+                console.log('countFollowees row = ', row);
+
+                if (err) {
+                    reject({
+                        respCd: BLOG_CODE.FAIL,
+                        respMsg: err.message
+                    });
+                } else {
+                    resolve({
+                        respCd: BLOG_CODE.SUCCESS,
+                        respMsg: '查询成功',
+                        data: {
+                            followeeCount: row.followeeCount
+                        }
+                    });
+                }
+            })
+        })
+    }
+
+    static async getUserInfo(userData) {
+        return new Promise((resolve, reject) => {
+            const {
+                id
+            } = userData
+            const sql = `SELECT id, name, phone FROM user WHERE id = ?`
+            db.get(sql, [id], (err, row) => {
+                if (err) {
+                    reject({
+                        respCd: BLOG_CODE.FAIL,
+                        respMsg: err.message
+                    });
+                } else {
+                    resolve({
+                        respCd: BLOG_CODE.SUCCESS,
+                        respMsg: '查询成功',
+                        data: row
+                    });
+                }
+            })
+        })
+    }
 }
 
 module.exports = UserModel

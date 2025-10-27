@@ -29,16 +29,16 @@ db.serialize(() => {
             console.log('用户表初始化成功！');
         }
     })
-
+    // db.run(`DROP TABLE IF EXISTS user_relation`)
     // 用户关系表
     db.run(`
         CREATE TABLE IF NOT EXISTS user_relation (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             follower_id INT NOT NULL,   -- 粉丝（关注者）
-            following_id INT NOT NULL,  -- 被关注者
+            followee_id INT NOT NULL,  -- 被关注者
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE
+            FOREIGN KEY (follower_id) REFERENCES user(id) ON DELETE CASCADE,
+            FOREIGN KEY (followee_id) REFERENCES user(id) ON DELETE CASCADE
         );
     `, (err) => {
         if (err) {
@@ -90,6 +90,7 @@ db.serialize(() => {
             console.log('博客评论表初始化成功！');
         }
     })
+
     // 博客点赞表
     db.run(`
         CREATE TABLE IF NOT EXISTS blog_favor (
@@ -108,6 +109,7 @@ db.serialize(() => {
             console.log('博客点赞表初始化成功！');
         }
     })
+
     db.run(`CREATE INDEX IF NOT EXISTS idx_blog_created_at ON blog(created_at DESC)`)
     db.run(`CREATE INDEX IF NOT EXISTS idx_blog_user_id ON blog(user_id)`)
 })

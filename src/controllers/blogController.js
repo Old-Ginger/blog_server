@@ -5,7 +5,8 @@ const { BLOG_CODE } = require('../../util/constant')
 exports.createBlog = async (ctx) => {
     const {
         blog,
-        origin_blog_id
+        origin_blog_id,
+        privacy_level = 0
     } = ctx.request.body
     const {
         id,
@@ -24,8 +25,8 @@ exports.createBlog = async (ctx) => {
             blog,
             user_id: id,
             title: name,
-            origin_blog_id
-
+            origin_blog_id,
+            privacy_level
         })
         ctx.status = 201
         ctx.body = result
@@ -40,14 +41,42 @@ exports.getBlogList = async (ctx) => {
     const {
         lastBlogId,
         page,
-        pageSize
+        pageSize,
+        user_id
     } = ctx.request.body
     const {
         id
     } = ctx.state.user
     try {
         const result = await BlogModel.getBlogList({
-            user_id: id,
+            user_id: user_id || id,
+            page,
+            pageSize,
+            blog_id: lastBlogId,
+            privacy_level: ctx.request.body?.privacy_level || 0
+        })
+        ctx.status = 201
+        ctx.body = result
+    } catch (error) {
+        ctx.status = 400
+        ctx.body = error
+    }
+}
+
+// 获取博客列表
+exports.getSpecificBlogList = async (ctx) => {
+    const {
+        lastBlogId,
+        page,
+        pageSize,
+        user_id
+    } = ctx.request.body
+    const {
+        id
+    } = ctx.state.user
+    try {
+        const result = await BlogModel.getSpecificBlogList({
+            user_id: user_id,
             page,
             pageSize,
             blog_id: lastBlogId
@@ -94,6 +123,7 @@ exports.unfavorBlog = async (ctx) => {
     const {
         blog_id
     } = ctx.request.body
+    const { id } = ctx.state.user
     if (!blog_id) {
         ctx.status = 400
         ctx.body = {
@@ -104,7 +134,8 @@ exports.unfavorBlog = async (ctx) => {
     }
     try {
         const result = await BlogModel.unfavorBlog({
-            blog_id
+            blog_id,
+            user_id: id
         })
         ctx.status = 201
         ctx.body = result
@@ -165,7 +196,3 @@ exports.blogCommentList = async (ctx) => {
         ctx.body = error
     }
 }
-// module.exports = {
-//     createBlog,
-//     getBlogList
-// }

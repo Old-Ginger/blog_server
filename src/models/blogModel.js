@@ -12,6 +12,53 @@ class BlogModel {
                 user_id,
                 page,
                 pageSize,
+                blog_id,
+                privacy_level
+            } = blogData
+            const blog_favor_sql = `
+            SELECT 
+                b.*,
+                CASE WHEN l.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_liked,
+                o.id AS original_blog_id,
+                o.title AS original_blog_title,
+                o.content AS original_blog_content,
+                o.user_id AS original_blog_user_id,
+                o.created_at AS original_blog_created_at
+            FROM 
+                blog b
+            LEFT JOIN 
+                blog o 
+                ON b.original_blog_id = o.id
+            LEFT JOIN 
+            blog_favor l 
+                ON b.id = l.blog_id AND l.user_id = ?
+            WHERE b.privacy_level <= ?
+            ORDER BY 
+                b.created_at DESC
+            LIMIT ?;`
+            db.all(blog_favor_sql, [user_id, privacy_level, pageSize], (err, rows) => {
+                if (err) {
+                    reject({
+                        respCd: BLOG_CODE.FAIL,
+                        respMsg: err.message
+                    });
+                } else {
+                    resolve({
+                        respCd: BLOG_CODE.SUCCESS,
+                        respMsg: '查询成功',
+                        data: rows
+                    });
+                }
+            })
+        })
+    }
+
+    static async getSpecificBlogList(blogData) {
+        return new Promise((resolve, reject) => {
+            const {
+                user_id,
+                page,
+                pageSize,
                 blog_id
             } = blogData
             const blog_favor_sql = `
@@ -31,10 +78,12 @@ class BlogModel {
             LEFT JOIN 
             blog_favor l 
                 ON b.id = l.blog_id AND l.user_id = ?
+            WHERE
+             b.user_id = ?
             ORDER BY 
                 b.created_at DESC
             LIMIT ?;`
-            db.all(blog_favor_sql, [user_id, pageSize], (err, rows) => {
+            db.all(blog_favor_sql, [user_id, user_id, pageSize], (err, rows) => {
                 if (err) {
                     reject({
                         respCd: BLOG_CODE.FAIL,
@@ -57,18 +106,16 @@ class BlogModel {
                 blog,
                 user_id,
                 title,
-                origin_blog_id
+                origin_blog_id,
+                privacy_level
             } = blogData
             const sql = `INSERT INTO blog (content
             , user_id,
             title,
             original_blog_id,
-            created_at) VALUES (?,?,?,?,datetime('now'))`
+            created_at,privacy_level) VALUES (?,?,?,?,datetime('now'), ?)`
             db.run(sql, [blog, user_id, title,
-                origin_blog_id], (err, row) => {
-                    console.log('err = ', err);
-                    console.log('blog row = ', row);
-
+                origin_blog_id, privacy_level], (err, row) => {
                     if (err) {
                         reject({
                             respCd: BLOG_CODE.FAIL,
@@ -179,6 +226,32 @@ class BlogModel {
                         respCd: BLOG_CODE.SUCCESS,
                         respMsg: '查询成功',
                         data: rows
+                    });
+                }
+            })
+        })
+    }
+
+    static async unfavorBlog(blogData) {
+        const {
+            blog_id,
+            user_id
+        } = blogData
+        return new Promise((resolve, reject) => {
+            const sql = `DELETE FROM blog_favor WHERE blog_id = ? AND user_id = ?`
+            db.run(sql, [blog_id, user_id], (err, row) => {
+                console.log('row ==== ', row);
+
+                console.log('err = ', err);
+                if (err) {
+                    reject({
+                        respCd: BLOG_CODE.FAIL,
+                        respMsg: err.message
+                    });
+                } else {
+                    resolve({
+                        respCd: BLOG_CODE.SUCCESS,
+                        respMsg: '取消点赞成功！'
                     });
                 }
             })

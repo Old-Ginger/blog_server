@@ -2,7 +2,10 @@ const Router = require('koa-router')
 const router = new Router()
 const {
     createUser,
-    checkUserLogin
+    checkUserLogin,
+    getUserFollowInfo,
+    followUser,
+    getUserInfo
 } = require('../controllers/userController')
 router.get('/', async (ctx) => {
     ctx.body = {
@@ -20,5 +23,7 @@ router.post('/register', async (ctx) => {
         respMsg: '新建用户成功'
     }
 })
-
+router.post('/getUserInfo', getUserInfo)
+router.post('/followUser', followUser)
+router.post('/getFollowInfo', getUserFollowInfo)
 module.exports = router

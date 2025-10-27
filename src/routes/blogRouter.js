@@ -6,10 +6,12 @@ const {
     favorBlog,
     unfavorBlog,
     commentBlog,
-    blogCommentList
+    blogCommentList,
+    getSpecificBlogList
 } = require('../controllers/blogController')
 
 router.post('/getBlogList', getBlogList)
+router.post('/getSpecificBlogList', getSpecificBlogList)
 router.post('/postBlog', createBlog)
 router.post('/favorBlog', favorBlog)
 router.post('/unfavorBlog', unfavorBlog)
